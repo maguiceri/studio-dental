@@ -656,6 +656,11 @@
 </footer>
 
 <script>
+  // al recargar, arrancar siempre desde el inicio
+  if('scrollRestoration' in history){ history.scrollRestoration='manual'; }
+  window.addEventListener('beforeunload',()=>window.scrollTo(0,0));
+  window.addEventListener('pageshow',()=>window.scrollTo(0,0));
+
   // mobile nav
   const toggle=document.querySelector('.nav-toggle');
   const menu=document.getElementById('menu');
