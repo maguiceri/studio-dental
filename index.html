@@ -264,11 +264,10 @@
     will-change:opacity,transform;
   }
   /* "respaldo médico": se pinta de color (sólido) a medida que se scrollea */
-  html.js .hero h1 em .fw{
-    transform:none;
-    opacity:calc(.45 + .55 * var(--p,0));
-    color:color-mix(in srgb, #d7d4ca, var(--sage-deep) calc(var(--p,0) * 100%));
-  }
+  /* "respaldo médico" se pinta solo, palabra por palabra, al cargar */
+  @keyframes paintWord{from{opacity:.42;color:#d7d4ca}to{opacity:1;color:var(--sage-deep)}}
+  html.js .hero h1 em .fw{transform:none;opacity:.42;color:#d7d4ca}
+  html.js .hero h1 em.painting .fw{animation:paintWord .5s ease both}
 
   /* ---------- responsive ---------- */
   @media(max-width:880px){
@@ -339,7 +338,8 @@
     .reveal{transition:none;opacity:1;transform:none}
     .btn:hover,.card:hover{transform:none}
     html.js .fw{opacity:1;transform:none}
-    html.js .hero h1 em .fw{color:var(--sage-deep)}
+    html.js .hero h1 em .fw{color:var(--sage-deep);opacity:1}
+    html.js .hero h1 em.painting .fw{animation:none}
     .hero-logo,.hero-logo img,.hero-copy>*{animation:none;opacity:1}
     .trust-track{animation:none}
   }
@@ -692,11 +692,10 @@
   const root=document.documentElement;
   root.classList.add('js');
 
-  // textos que aparecen desde abajo al scrollear (todo menos el hero,
-  // que tiene su propia intro; salvo "respaldo médico", que se pinta).
-  const FILL_SELECTOR='h2,h3,.eyebrow,.lead,.head p,.doc p,.hero h1 em';
+  // textos que aparecen desde abajo al scrollear (el hero tiene su propia intro)
+  const FILL_SELECTOR='h2,h3,.eyebrow,.lead,.head p,.doc p';
   const fillEls=[...document.querySelectorAll(FILL_SELECTOR)]
-    .filter(el=>(el.closest('.hero')===null || el.matches('.hero h1 em')) && el.closest('.trat')===null);
+    .filter(el=>el.closest('.hero')===null && el.closest('.trat')===null);
 
   // parte el texto en palabras (.fw) conservando el marcado interno (ej: <em>)
   function splitNode(node,words){
@@ -721,8 +720,18 @@
     splitNode(el,words);
     el._words=words;
     el._state=null;
-    el._heroEm=el.matches('.hero h1 em');   // se pinta con el scroll, no con la posición
   });
+
+  // "respaldo médico": se pinta solo, palabra por palabra, después de la intro
+  const heroEm=document.querySelector('.hero h1 em');
+  if(heroEm){
+    const words=[];
+    splitNode(heroEm,words);
+    const mobile=matchMedia('(max-width:880px)').matches;
+    const base=mobile?1.45:1.75;             // arranca cuando ya se ve el título
+    words.forEach((w,i)=>{ w.style.animationDelay=(base+i*0.13).toFixed(2)+'s'; });
+    heroEm.classList.add('painting');
+  }
 
   function setAll(el,v){
     const s=String(v);
@@ -735,15 +744,6 @@
     const vh=window.innerHeight;
     const start=vh*0.92, end=vh*0.32;   // banda donde se rellena
     for(const el of fillEls){
-      if(el._heroEm){                          // pintado por cantidad de scroll
-        const n=el._words.length;
-        const lead=Math.min(9,Math.max(4,n*0.5));
-        let prog=window.scrollY/(vh*0.7);
-        prog=prog<0?0:prog>1?1:prog;
-        const reveal=prog*(n+lead);
-        for(let i=0;i<n;i++){let lp=(reveal-i)/lead;lp=lp<0?0:lp>1?1:lp;el._words[i].style.setProperty('--p',lp.toFixed(3));}
-        continue;
-      }
       const r=el.getBoundingClientRect();
       if(r.top>vh){ if(el._state!==0){setAll(el,0);el._state=0;} continue; }
       if(r.bottom<0){ if(el._state!==1){setAll(el,1);el._state=1;} continue; }
