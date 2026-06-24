@@ -258,9 +258,10 @@
   .reveal{opacity:0;transform:translateY(26px);transition:opacity .8s ease,transform .8s ease}
   .reveal.in{opacity:1;transform:none}
 
-  /* foto del doctor: se revela deslizándose desde la izquierda (sólo si hay JS) */
-  html.js .swipe-in{clip-path:inset(0 100% 0 0);transition:clip-path 1.15s cubic-bezier(.6,0,.16,1)}
-  html.js .swipe-in.in{clip-path:inset(0 0 0 0)}
+  /* foto del doctor: entra deslizándose desde la izquierda — animación CSS al cargar,
+     termina SIEMPRE visible (no depende de JS ni de scroll) */
+  @keyframes photoIn{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+  .doc-photo{animation:photoIn 1.15s cubic-bezier(.6,0,.16,1) .2s both}
 
   /* palabras que suben desde abajo a medida que se hace scroll */
   .fw{display:inline-block}
@@ -279,7 +280,6 @@
     /* scroll de palabras más suave y legible en pantallas chicas */
     html.js .fw{opacity:calc(.42 + .58 * var(--p,0));
       transform:translateY(calc((1 - var(--p,0)) * .32em))}
-    .swipe-in{transition:clip-path .9s cubic-bezier(.6,0,.16,1)}
     .menu{position:fixed;top:86px;left:16px;right:16px;background:rgba(14,13,10,.96);
       backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);flex-direction:column;
       align-items:stretch;gap:0;padding:8px 22px 20px;border:1px solid var(--line);border-radius:22px;
@@ -335,7 +335,7 @@
     .btn:hover,.info:hover{transform:none}
     .hero-inner>*,.hero-sig{animation:none!important;opacity:1}
     .trust-track{animation:none}
-    html.js .swipe-in,html.js .swipe-in.in{clip-path:none;transition:none}
+    .doc-photo{animation:none;clip-path:none}
     html.js .fw{opacity:1;transform:none}
   }
 </style>
@@ -489,7 +489,7 @@
   <!-- DOCTOR -->
   <section id="doctor">
     <div class="wrap doc">
-      <div class="doc-photo swipe-in"><img src="doctor.jpg" alt="Dr. Juan Martín Di Gruccio" /></div>
+      <div class="doc-photo"><img src="doctor.jpg" alt="Dr. Juan Martín Di Gruccio" /></div>
       <div class="reveal">
         <span class="eyebrow">El doctor</span>
         <h2>Juan Martín Di Gruccio</h2>
@@ -697,7 +697,7 @@
   const io=new IntersectionObserver((entries)=>{
     entries.forEach(en=>{if(en.isIntersecting){en.target.classList.add('in');io.unobserve(en.target);}});
   },{threshold:.14});
-  document.querySelectorAll('.reveal,.swipe-in').forEach(el=>io.observe(el));
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 
   // ====== las palabras suben desde abajo a medida que se hace scroll ======
   const root=document.documentElement;
