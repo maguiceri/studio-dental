@@ -725,7 +725,13 @@
   }
   fillEls.forEach(el=>{ const words=[]; splitNode(el,words); el._words=words; el._state=null; });
 
-  function setAll(el,v){ const s=String(v); for(const w of el._words) w.style.setProperty('--p',s); }
+  function setAll(el,v){ const s=String(v); for(const w of el._words){ w.style.setProperty('--p',s); if(v>=1) w._mp=1; } }
+
+  // rellena al instante toda una sección (al navegar desde el header/botones)
+  function fillContainer(node){
+    if(!node) return;
+    for(const el of fillEls){ if(node.contains(el)){ setAll(el,1); el._state=1; } }
+  }
 
   let fillTick=false;
   function updateFill(){
@@ -745,8 +751,10 @@
       let prog=(start-r.top)/(start-end); prog=prog<0?0:prog>1?1:prog;
       const reveal=prog*(n+lead);
       for(let i=0;i<n;i++){
+        const w=el._words[i];
         let lp=(reveal-i)/lead; lp=lp<0?0:lp>1?1:lp;
-        el._words[i].style.setProperty('--p',lp.toFixed(3));
+        if((w._mp||0)>lp) lp=w._mp; else w._mp=lp;   // una vez revelada, no se apaga
+        w.style.setProperty('--p',lp.toFixed(3));
       }
     }
   }
@@ -756,6 +764,13 @@
   }else{
     addEventListener('scroll',onFill,{passive:true});
     addEventListener('resize',onFill,{passive:true});
+    // al hacer clic en un enlace interno (#seccion), rellena la sección destino
+    document.querySelectorAll('a[href^="#"]').forEach(a=>{
+      a.addEventListener('click',()=>{
+        const id=a.getAttribute('href').slice(1);
+        if(id) requestAnimationFrame(()=>fillContainer(document.getElementById(id)));
+      });
+    });
     updateFill();
   }
 
