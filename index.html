@@ -86,11 +86,6 @@
   .intro.leaving .intro-stage{transform:translate(30vw,-3vh) scale(.34);opacity:0}
   .intro-stage canvas{width:100%;height:auto;display:block;
     filter:blur(.2px) drop-shadow(0 0 18px rgba(246,215,121,.22))}
-  .intro-skip{position:fixed;top:24px;right:28px;background:none;border:0;cursor:pointer;
-    color:rgba(221,214,198,.38);font-family:var(--sans);font-size:.66rem;letter-spacing:.24em;
-    text-transform:uppercase;transition:color .25s,opacity .5s;z-index:201;pointer-events:auto}
-  .intro-skip:hover{color:var(--gold-2)}
-  .intro.leaving .intro-skip,.intro.gone .intro-skip{opacity:0;pointer-events:none}
 
   /* ---------- botones ---------- */
   .btn{display:inline-block;font-family:var(--sans);font-size:.72rem;letter-spacing:.22em;
@@ -356,7 +351,6 @@
     <canvas id="cv" width="1604" height="800"></canvas>
   </div>
 </div>
-<button class="intro-skip" id="skip">Saltar</button>
 
 <!-- ============ HEADER ============ -->
 <header>
@@ -670,7 +664,6 @@
       document.body.classList.add('entered');         // entra el contenido del hero
       setTimeout(()=>{ intro.classList.add('gone'); }, 1200);
     }
-    document.getElementById('skip').addEventListener('click',done);
 
     // accesibilidad: sin animación, mostrar el sitio enseguida
     if(matchMedia('(prefers-reduced-motion: reduce)').matches){
